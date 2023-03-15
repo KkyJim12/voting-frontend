@@ -1,0 +1,66 @@
+{
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_managerAddress",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_fullName",
+                    "type": "string"
+                }
+            ],
+            "name": "addCandidate",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "viewCandidates",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "string",
+                            "name": "fullName",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "voteCount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct Candidate[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_candidateIndex",
+                    "type": "uint256"
+                }
+            ],
+            "name": "vote",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
+}
