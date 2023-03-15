@@ -30,7 +30,7 @@
                     </div>
                     <div class="flex flex-col space-y-2">
                         <h1 class="text-2xl font-semibold mb-8">Add candidate</h1>
-                        <form @submit.prevent="addCandidate" class="flex flex-col space-y-4 items-center">
+                        <form v-if="account.address === managerAddress" class="flex flex-col space-y-4 items-center">
                             <div class="flex flex-col space-y-2 w-full">
                                 <label class="text-sm">Full Name</label>
                                 <input
@@ -62,6 +62,7 @@
                                 <span>Add Candidate</span>
                             </button>
                         </form>
+                        <div v-else class="">You are not manager.</div>
                     </div>
                 </div>
             </div>
@@ -69,12 +70,12 @@
                 <div class="bg-white h-full bg-opacity-70 p-8 shadow-md">
                     <h1 class="text-2xl font-semibold mb-8">Candidate List</h1>
                     <div class="grid grid-cols-4 gap-4">
-                        <div class="col-span-1">
+                        <div v-for="candidate in candidates" :key="index" class="col-span-1">
                             <div class="rounded bg-sky-500 p-4 transform hover:-translate-y-5 duration-300 shadow-md">
                                 <h2 class="font-semibold text-white text-8xl text-center mb-4">2</h2>
-                                <h2 class="font-semibold text-white">Piyakarn Nimmakulvirut</h2>
-                                <p class="text-white">Age: 26</p>
-                                <p class="text-white">Kuliber co.,ltd.</p>
+                                <h2 class="font-semibold text-white">{{ candidate.fullName }}</h2>
+                                <p class="text-white">Age: {{ candidate.age }}</p>
+                                <p class="text-white">{{ candidate.organization }}</p>
                                 <button
                                     class="rounded bg-green-500 hover:bg-green-600 shadow-md w-full text-white py-2 mt-4"
                                     type="button"
@@ -91,6 +92,7 @@
 </template>
 
 <script>
+import { abi } from '~/static/abi.json';
 const Web3 = require('web3');
 export default {
     data() {
@@ -99,11 +101,15 @@ export default {
             isCorrectNetwork: false,
             isConnectWallet: false,
             account: { address: '', balance: 0, network: '' },
-            contractAddress: '0x77358fdf08d4ed3899746034b4803f5694a2f1e5',
+            contractAddress: '0x7c5fB40E6E9Dcea2CabcC30b37965BF39D987BF2',
+            managerAddress: null,
+            candidates: [],
         };
     },
-    async mounted() {
-        await this.initWeb3();
+    async fetch() {
+        this.initWeb3();
+        await this.getManagerAddress();
+        await this.viewAllCandidates();
     },
     methods: {
         async initWeb3() {
@@ -111,6 +117,10 @@ export default {
                 'https://eth-goerli.g.alchemy.com/v2/X-coHiFGjrD_qvb2FIB8JhjuUu__mpNN'
             );
             this.web3 = new Web3(web3Provider);
+        },
+        async getManagerAddress() {
+            const contract = await new this.web3.eth.Contract(abi, this.contractAddress);
+            this.managerAddress = await contract.methods.viewManagerAddress().call();
         },
         async connectMetamask() {
             if (window.ethereum) {
@@ -137,8 +147,13 @@ export default {
         },
         async switchNetwork() {},
         async addCandidate() {
-            const contract = await new this.web3.eth.Contract(this.abi, this.contractAddress);
+            const contract = await new this.web3.eth.Contract(abi, this.contractAddress);
             console.log(await contract.methods.viewCandidates().call());
+        },
+
+        async viewAllCandidates() {
+            const contract = await new this.web3.eth.Contract(abi, this.contractAddress);
+            this.candidates = await contract.methods.viewAllCandidates().call();
         },
     },
 };

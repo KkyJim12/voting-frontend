@@ -17,6 +17,16 @@
                     "internalType": "string",
                     "name": "_fullName",
                     "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_age",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_organization",
+                    "type": "string"
                 }
             ],
             "name": "addCandidate",
@@ -26,13 +36,23 @@
         },
         {
             "inputs": [],
-            "name": "viewCandidates",
+            "name": "viewAllCandidates",
             "outputs": [
                 {
                     "components": [
                         {
                             "internalType": "string",
                             "name": "fullName",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "age",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "organization",
                             "type": "string"
                         },
                         {
@@ -44,6 +64,19 @@
                     "internalType": "struct Candidate[]",
                     "name": "",
                     "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "viewManagerAddress",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
                 }
             ],
             "stateMutability": "view",
