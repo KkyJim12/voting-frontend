@@ -30,10 +30,15 @@
                     </div>
                     <div class="flex flex-col space-y-2">
                         <h1 class="text-2xl font-semibold mb-8">Add candidate</h1>
-                        <form v-if="account.address === managerAddress" class="flex flex-col space-y-4 items-center">
+                        <form
+                            @submit.prevent="addCandidate()"
+                            v-if="account.address === managerAddress"
+                            class="flex flex-col space-y-4 items-center"
+                        >
                             <div class="flex flex-col space-y-2 w-full">
                                 <label class="text-sm">Full Name</label>
                                 <input
+                                    v-model="form.fullName"
                                     class="rounded px-4 py-2 focus:outline-blue-500"
                                     type="text"
                                     placeholder="Type candidate full name"
@@ -42,6 +47,7 @@
                             <div class="flex flex-col space-y-2 w-full">
                                 <label class="text-sm">Age</label>
                                 <input
+                                    v-model="form.age"
                                     class="rounded px-4 py-2 focus:outline-blue-500"
                                     type="number"
                                     placeholder="Type candidate age"
@@ -50,6 +56,7 @@
                             <div class="flex flex-col space-y-2 w-full">
                                 <label class="text-sm">Organization</label>
                                 <input
+                                    v-model="form.organization"
                                     class="rounded px-4 py-2 focus:outline-blue-500"
                                     type="text"
                                     placeholder="Type candidate organization  "
@@ -97,6 +104,7 @@ const Web3 = require('web3');
 export default {
     data() {
         return {
+            accounts: [],
             web3: '',
             isCorrectNetwork: false,
             isConnectWallet: false,
@@ -104,33 +112,29 @@ export default {
             contractAddress: '0x7c5fB40E6E9Dcea2CabcC30b37965BF39D987BF2',
             managerAddress: null,
             candidates: [],
+            form: {
+                fullName: '',
+                age: '',
+                organization: '',
+            },
         };
     },
     async fetch() {
-        this.initWeb3();
         await this.getManagerAddress();
         await this.viewAllCandidates();
     },
     methods: {
-        async initWeb3() {
-            const web3Provider = new Web3.providers.HttpProvider(
-                'https://eth-goerli.g.alchemy.com/v2/X-coHiFGjrD_qvb2FIB8JhjuUu__mpNN'
-            );
-            this.web3 = new Web3(web3Provider);
-        },
         async getManagerAddress() {
             const contract = await new this.web3.eth.Contract(abi, this.contractAddress);
             this.managerAddress = await contract.methods.viewManagerAddress().call();
         },
         async connectMetamask() {
             if (window.ethereum) {
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts',
-                });
-
+                this.accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                this.web3 = new Web3(window.ethereum);
                 this.account = {
-                    address: accounts[0],
-                    balance: await this.web3.eth.getBalance(accounts[0]),
+                    address: await this.web3.utils.toChecksumAddress(this.accounts[0]),
+                    balance: await this.web3.eth.getBalance(this.accounts[0]),
                     network: await this.web3.eth.net.getId(),
                 };
 
@@ -141,14 +145,32 @@ export default {
                 if (this.account.network === 5) {
                     this.isCorrectNetwork = true;
                 }
+
+                await this.getManagerAddress();
             } else {
                 alert('You must install metamask first.');
             }
         },
-        async switchNetwork() {},
+        async switchNetwork() {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: Web3.utils.toHex(5) }],
+            });
+
+            this.account = {
+                address: await this.web3.utils.toChecksumAddress(this.accounts[0]),
+                balance: await this.web3.eth.getBalance(this.accounts[0]),
+                network: await this.web3.eth.net.getId(),
+            };
+
+            this.isCorrectNetwork = true;
+        },
         async addCandidate() {
             const contract = await new this.web3.eth.Contract(abi, this.contractAddress);
-            console.log(await contract.methods.viewCandidates().call());
+            const response = await contract.methods
+                .addCandidate(this.form.fullName, this.form.age, this.form.organization)
+                .call();
+            console.log(response);
         },
 
         async viewAllCandidates() {
